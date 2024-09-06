@@ -8,9 +8,9 @@ import { Product } from '@/components/CollectionsPage'
 interface ProductDetailsProps {
   selectedProduct: Product | null;
   closeProductDetails: () => void;
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, quantity: number) => void;
   addToWishlist: (product: Product) => void;
-  updateQuantity: (productId: string, newQuantity: number) => void;
+  wishlist: Product[]; // Add this line
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
@@ -18,22 +18,28 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   closeProductDetails,
   addToCart,
   addToWishlist,
-  updateQuantity
+  wishlist // Add this line
 }) => {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    if (selectedProduct) {
-      setQuantity(selectedProduct.quantity);
-    }
+    setQuantity(1);
   }, [selectedProduct]);
 
   if (!selectedProduct) return null;
 
+  const isInWishlist = wishlist.some(item => item.id === selectedProduct.id);
+
   const handleQuantityChange = (newQuantity: number) => {
     const updatedQuantity = Math.max(1, newQuantity);
     setQuantity(updatedQuantity);
-    updateQuantity(selectedProduct.id, updatedQuantity);
+  };
+
+  const handleAddToCart = () => {
+    if (selectedProduct) {
+      addToCart(selectedProduct, quantity);
+      closeProductDetails();
+    }
   };
 
   return (
@@ -74,24 +80,8 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-              <div className="flex space-x-2">
-                <Button 
-                  className="flex-1 bg-[#113108] text-white hover:bg-[#1c4912]"
-                  onClick={() => addToCart(selectedProduct)}
-                >
-                  Add to Cart
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="flex-none border-[#113108] text-[#113108] hover:bg-[#113108] hover:text-white"
-                  onClick={() => addToWishlist(selectedProduct)}
-                >
-                  <Heart className="h-4 w-4" />
-                </Button>
-              </div>
               <div className="flex items-center justify-between">
                 <Button
-                  variant="outline"
                   className="px-2 py-1"
                   onClick={() => handleQuantityChange(quantity - 1)}
                 >
@@ -99,11 +89,29 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 </Button>
                 <span>{quantity}</span>
                 <Button
-                  variant="outline"
                   className="px-2 py-1"
                   onClick={() => handleQuantityChange(quantity + 1)}
                 >
                   <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  className="flex-1 bg-[#113108] text-white hover:bg-[#1c4912]"
+                  onClick={handleAddToCart}
+                >
+                  Add to Cart
+                </Button>
+                <Button 
+                  className={`flex-none border ${isInWishlist ? 'bg-[#113108] text-white' : 'bg-transparent text-[#113108]'} border-[#113108] hover:bg-[#113108] hover:text-white`}
+                  onClick={() => {
+                    if (selectedProduct) {
+                      console.log('Wishlist button clicked for product:', selectedProduct);
+                      addToWishlist(selectedProduct);
+                    }
+                  }}
+                >
+                  <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`} />
                 </Button>
               </div>
             </div>

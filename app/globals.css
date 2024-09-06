@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind CSS directives */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Your custom styles can go here */
 
 @layer base {
   :root {
@@ -61,9 +64,16 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: theme('colors.border');
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: theme('colors.background');
+    color: theme('colors.foreground');
+  }
+}
+
+@layer utilities {
+  .border-border {
+    border-color: hsl(var(--border));
   }
 }

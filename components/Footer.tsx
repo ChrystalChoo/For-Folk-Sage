@@ -8,15 +8,15 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase">Home</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="text-stone-300 hover:text-white">About Us</Link></li>
-              <li><Link href="#" className="text-stone-300 hover:text-white">Our Values</Link></li>
-              <li><Link href="#" className="text-stone-300 hover:text-white">Our Concept</Link></li>
+              <li><Link href="/#our-mission" className="text-stone-300 hover:text-white">Our Mission</Link></li>
+              <li><Link href="/#our-values" className="text-stone-300 hover:text-white">Our Values</Link></li>
+              <li><Link href="/#our-concept" className="text-stone-300 hover:text-white">Our Concept</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase">Collection</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="text-stone-300 hover:text-white">All Products</Link></li>
+              <li><Link href="/collections" className="text-stone-300 hover:text-white">All Products</Link></li>
               <li><Link href="#" className="text-stone-300 hover:text-white">Bestsellers</Link></li>
               <li><Link href="#" className="text-stone-300 hover:text-white">New Arrivals</Link></li>
             </ul>

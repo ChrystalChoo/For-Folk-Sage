@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Search, User, ShoppingBag, Heart, ChevronDown, X, Star, Plus, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,8 +26,8 @@ import Newsletter from '@/components/Newsletter'
 import UserGeneratedContent from '@/components/UserGeneratedContent'
 import ProductGrid from '@/components/ProductGrid'
 import ProductDetails from '@/components/ProductDetails'
-import { useCart } from '@/context/CartContext';
 
+// Update the Product interface
 export interface Product {
   id: string;
   name: string;
@@ -38,31 +38,57 @@ export interface Product {
   sizes: string[];
   color?: string;
   category?: string;
-  quantity: number;
 }
 
+// Define a separate CartItem interface
+export type CartItem = Product & { quantity: number };
+
 export default function CollectionsPage() {
-  const { cart, addToCart, removeFromCart, updateCartItemQuantity, cartTotal } = useCart();
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isCartOpen, setIsCartOpen] = useState(false)
-  const [isWishlistOpen, setIsWishlistOpen] = useState(false)
-  const [wishlist, setWishlist] = useState<Product[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [email, setEmail] = useState('')
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [filterColor, setFilterColor] = useState<string | null>(null)
-  const [filterSize, setFilterSize] = useState<string | null>(null)
-  const [filterCategory, setFilterCategory] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<string | null>(null)
-  const [isFiltered, setIsFiltered] = useState(false)
+  // Implement a basic cart functionality
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const addToCart = (product: Product, quantity: number = 1) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+        );
+      }
+      return [...prevCart, { ...product, quantity }];
+    });
+  };
+  const removeFromCart = (id: string) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== id));
+  };
+  const updateCartItemQuantity = (id: string, quantity: number) => {
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === id ? { ...item, quantity: quantity } : item
+      )
+    );
+  };
+  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [email, setEmail] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [filterColor, setFilterColor] = useState<string | null>(null);
+  const [filterSize, setFilterSize] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [isFiltered, setIsFiltered] = useState(false);
 
   const products: Product[] = [
-    { id: '1', name: 'Less Whine, More Wine Tee Mystery Box', price: 125, image: '/product images/6.png', rating: 4.5, reviews: 28, sizes: ['XS', 'S', 'M', 'L', 'XL'], color: 'White', category: 'T-Shirts', quantity: 1 },
-    { id: '2', name: 'Less Whine, More Wine Sweater Mystery Box', price: 185, image: '/product images/3.png', rating: 4.2, reviews: 15, sizes: ['S', 'M', 'L', 'XL'], color: 'Gray', category: 'Sweaters', quantity: 1 },
-    { id: '3', name: 'Mindfulness Journal', price: 55, image: '/product images/2.png', rating: 4.8, reviews: 42, sizes: ['One Size'], color: 'Beige', category: 'Accessories', quantity: 1 },
-    { id: '4', name: 'Organic Cotton Cap', price: 65, image: '/product images/5.png', rating: 4.0, reviews: 10, sizes: ['S/M', 'L/XL'], color: 'Black', category: 'Accessories', quantity: 1 },
-    { id: '5', name: 'Eco-friendly Yoga Mat', price: 80, image: '/product images/5.png', rating: 4.7, reviews: 33, sizes: ['Standard'], color: 'Green', category: 'Fitness', quantity: 1 },
+    { id: '1', name: 'Less Whine, More Wine Tee Mystery Box', price: 125, image: '/product images/8.png', rating: 4.5, reviews: 28, sizes: ['XS', 'S', 'M', 'L', 'XL'], color: 'White', category: 'T-Shirts' },
+    { id: '2', name: 'Less Whine, More Wine Sweater Mystery Box', price: 185, image: '/product images/9.png', rating: 4.2, reviews: 15, sizes: ['S', 'M', 'L', 'XL'], color: 'Gray', category: 'Sweaters' },
+    { id: '3', name: 'Mindfulness Journal', price: 55, image: '/product images/10.png', rating: 4.8, reviews: 42, sizes: ['One Size'], color: 'Beige', category: 'Accessories' },
+    { id: '4', name: 'Organic Cotton Cap', price: 65, image: '/product images/11.png', rating: 4.0, reviews: 10, sizes: ['S/M', 'L/XL'], color: 'Black', category: 'Accessories' },
+    { id: '5', name: 'Eco-friendly Yoga Mat', price: 80, image: '/product images/12.png', rating: 4.7, reviews: 33, sizes: ['Standard'], color: 'Green', category: 'Fitness' },
   ];
 
   useEffect(() => {
@@ -113,16 +139,20 @@ export default function CollectionsPage() {
     setIsLoggedIn(false)
   }
 
-  const addToWishlist = (product: Product) => {
-    if (!wishlist.some(item => item.id === product.id)) {
-      setWishlist([...wishlist, product])
-    }
-    setIsWishlistOpen(true)
-  }
+  const addToWishlist = useCallback((product: Product) => {
+    setWishlist(prevWishlist => {
+      const existingIndex = prevWishlist.findIndex(item => item.id === product.id);
+      if (existingIndex !== -1) {
+        return prevWishlist.filter(item => item.id !== product.id);
+      } else {
+        return [...prevWishlist, product];
+      }
+    });
+  }, []);
 
-  const removeFromWishlist = (productId: string) => {
-    setWishlist(wishlist.filter(item => item.id !== productId))
-  }
+  const removeFromWishlist = useCallback((productId: string) => {
+    setWishlist(prevWishlist => prevWishlist.filter(item => item.id !== productId));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,11 +180,9 @@ export default function CollectionsPage() {
     setSortBy(null);
   }
 
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    setFilteredProducts(filteredProducts.map(product => 
-      product.id === productId ? { ...product, quantity: newQuantity } : product
-    ));
-  }
+  useEffect(() => {
+    console.log('Wishlist updated:', wishlist);
+  }, [wishlist]);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800">
@@ -166,8 +194,8 @@ export default function CollectionsPage() {
         setIsCartOpen={setIsCartOpen}
         isWishlistOpen={isWishlistOpen}
         setIsWishlistOpen={setIsWishlistOpen}
-        cart={cart}
         wishlist={wishlist}
+        cart={cart}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         handleSearch={handleSearch}
@@ -252,7 +280,8 @@ export default function CollectionsPage() {
           addToCart={addToCart}
           addToWishlist={addToWishlist}
           openProductDetails={openProductDetails}
-          updateQuantity={updateQuantity}
+          updateQuantity={updateCartItemQuantity}
+          wishlist={wishlist}
         />
       </main>
 
@@ -261,7 +290,7 @@ export default function CollectionsPage() {
         closeProductDetails={closeProductDetails}
         addToCart={addToCart}
         addToWishlist={addToWishlist}
-        updateQuantity={updateQuantity}
+        wishlist={wishlist}
       />
 
       <UserGeneratedContent content={userGeneratedContent} />
